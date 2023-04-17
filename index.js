@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const ssm = require('./ssm-helper');
 const fs = require('fs');
+
 async function run_action()
 {
     try
@@ -12,7 +13,7 @@ async function run_action()
         const decryption = core.getInput('decryption') === 'true';
         const maskValues = core.getInput('mask-values') === 'true';
         const outFile = core.getInput('out-file');
-        const outFileStr = "";
+        let outFileStr = "";
         const params = await ssm.getParameters(ssmPath, getChildren, decryption, region);
         for (let param of params)
         {

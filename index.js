@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const ssm = require('./ssm-helper');
-
+const fs = require('fs');
 async function run_action()
 {
     try
@@ -11,7 +11,8 @@ async function run_action()
         const region = process.env.AWS_DEFAULT_REGION;
         const decryption = core.getInput('decryption') === 'true';
         const maskValues = core.getInput('mask-values') === 'true';
-
+        const outFile = core.getInput('out-file');
+        const outFileStr = "";
         const params = await ssm.getParameters(ssmPath, getChildren, decryption, region);
         for (let param of params)
         {
@@ -22,7 +23,9 @@ async function run_action()
                 // Assume basic JSON structure
                 for (var key in parsedValue)
                 {
-                    setEnvironmentVar(prefix + key, parsedValue[key], maskValues);
+                    const k = prefix + key;
+                    outFileStr = outFileStr + k + "=" + parsedValue[key] + '\n';
+                    setEnvironmentVar(k, parsedValue[key], maskValues);
                 }
             }
             else
@@ -32,8 +35,16 @@ async function run_action()
                 var split = param.Name.split('/');
                 var envVarName = prefix + split[split.length - 1];
                 core.debug(`Using prefix + end of ssmPath for env var name: ${envVarName}`);
+                
+                outFileStr = outFileStr + envVarName + "=" + parsedValue + '\n';
                 setEnvironmentVar(envVarName, parsedValue, maskValues);
             }
+        }
+
+        if (outFile) {
+            core.debug(`Writing to file: ${outFile}`);
+            core.debug(`outFileStr: ${outFileStr}`);
+            fs.writeFileSync(outFile, outFileStr);
         }
     }
     catch (e)

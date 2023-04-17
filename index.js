@@ -43,8 +43,8 @@ async function run_action()
         }
 
         if (outFile) {
-            core.debug(`Writing to file: ${outFile}`);
-            core.debug(`outFileStr: ${outFileStr}`);
+            core.info(`Writing to file: ${outFile}`);
+            core.info(`outFileStr: ${outFileStr}`);
             fs.writeFileSync(outFile, outFileStr);
         }
     }
